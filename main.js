@@ -8,11 +8,6 @@ function submitIssue(e) {
   const id = Math.floor(Math.random()*100000000) + '';
   const status = 'Open';
 
-  //value inc
-  const totalIssue = document.getElementById('totalIssue').innerText;
-  const totalIssueNum = parseInt(totalIssue);
-  document.getElementById('totalIssue').innerText = totalIssueNum + 1;
-
   const issue = { id, description, severity, assignedTo, status };
   let issues = [];
   if (localStorage.getItem('issues')){
@@ -28,7 +23,7 @@ function submitIssue(e) {
 
 const closeIssue = id => {
   const issues = JSON.parse(localStorage.getItem('issues'));
-  const currentIssue = issues.find(issue => issue.id === id);
+  const currentIssue = issues.find(issue => issue.id === id.toString());
   currentIssue.status = 'Closed';
   localStorage.setItem('issues', JSON.stringify(issues));
   fetchIssues();
@@ -36,37 +31,47 @@ const closeIssue = id => {
 
 const deleteIssue = id => {
   const issues = JSON.parse(localStorage.getItem('issues'));
-  const remainingIssues = issues.filter((issue) => issue.id !== id.toString() );
+  const remainingIssues = issues.filter((issue) => issue.id != id );
   localStorage.setItem('issues', JSON.stringify(remainingIssues));
+  document.getElementById('totalIssue').innerText =  0;
+  document.getElementById('closeIssue').innerText = 0;
   fetchIssues();
-
-  //dec
-  const deleteIssue = document.getElementById('totalIssue').innerText;
-  const deleteIssueNum = parseInt(deleteIssue);
-  if(deleteIssueNum > 0){
-    document.getElementById('totalIssue').innerText = deleteIssueNum - 1;
-  }
-  
 }
 
 const fetchIssues = () => {
   const issues = JSON.parse(localStorage.getItem('issues'));
   const issuesList = document.getElementById('issuesList');
   issuesList.innerHTML = '';
- 
 
+  let closeCount = 0;
   for (var i = 0; i < issues.length; i++) {
     const {id, description, severity, assignedTo, status} = issues[i];
 
-    issuesList.innerHTML +=   `<div class="well">
-                              <h6>Issue ID: ${id} </h6>
-                              <p><span class="label label-info"> ${status} </span></p>
-                              <h3> ${description} </h3>
-                              <p><span class="glyphicon glyphicon-time"></span> ${severity}</p>
-                              <p><span class="glyphicon glyphicon-user"></span> ${assignedTo}</p>
-                              <a href="#" onclick="setStatusClosed(${id})" class="btn btn-warning">Close</a>
-                              <a href="#" onclick="deleteIssue(${id})" class="btn btn-danger">Delete</a>
-                              </div>`;
-  }
+  
+    if(status == 'Closed'){
+      closeCount++;
+        issuesList.innerHTML +=   `<div class="well">
+                                  <h6>Issue ID: ${id.strike()} </h6>
+                                  <p><span class="label label-info"> ${status} </span></p>
+                                  <h3> ${description.strike()} </h3>
+                                  <p><span class="glyphicon glyphicon-time"></span> ${severity.strike()}</p>
+                                  <p><span class="glyphicon glyphicon-user"></span> ${assignedTo}</p>
+                                  <a href="#" onclick="closeIssue(${id})" class="btn btn-warning">Close</a>
+                                  <a href="#" onclick="deleteIssue(${id})" class="btn btn-danger">Delete</a>
+                                  </div>`;
+    }else{
+        issuesList.innerHTML +=   `<div class="well">
+                                  <h6>Issue ID: ${id} </h6>
+                                  <p><span class="label label-info"> ${status} </span></p>
+                                  <h3> ${description} </h3>
+                                  <p><span class="glyphicon glyphicon-time"></span> ${severity}</p>
+                                  <p><span class="glyphicon glyphicon-user"></span> ${assignedTo}</p>
+                                  <a href="#" onclick="closeIssue(${id})" class="btn btn-warning">Close</a>
+                                  <a href="#" onclick="deleteIssue(${id})" class="btn btn-danger">Delete</a>
+                                  </div>`;
+    }
+    document.getElementById('totalIssue').innerText = `${issues.length}`;
+    document.getElementById('closeIssue').innerText =  issues.length - closeCount;
+ }
+ 
 }
-
